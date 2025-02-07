@@ -1,7 +1,6 @@
 use serde;
 use std::error::Error;
 use std::process;
-
 #[derive(Debug, serde::Deserialize, PartialEq)]
 #[allow(non_snake_case)]
 struct IssuerDetail {
@@ -23,6 +22,7 @@ struct IssuerDetail {
     OPM_5yrs: f64,
     Piotski_Scr: i32,
 }
+
 
 fn collect_and_sort<F>(
     records: &[IssuerDetail],
@@ -61,12 +61,11 @@ fn generate_score_for_factor(
 
 #[allow(unused)]
 fn run() -> Result<(), Box<dyn Error>> {
-    let mut records = Vec::new();
+    // let mut records = Vec::new();
     let mut rdr = csv::Reader::from_path("resources/Bank_details.csv")?;
-    for result in rdr.deserialize() {
-        let record: IssuerDetail = result?;
-        records.push(record);
-    }
+    let mut records: Vec<IssuerDetail> = rdr.deserialize()
+        .map(|result| result.expect("Failed to deserialize record"))
+        .collect();
 
     let cmp_vec = collect_and_sort(&records, |r| r.CMP, false);
     let pe_vec = collect_and_sort(&records, |r| r.PE, false);
@@ -147,7 +146,9 @@ fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn main() {
+#[actix_rt::main]
+async fn main() {
+
     if let Err(err) = run() {
         println!("{}", err);
         process::exit(1);
