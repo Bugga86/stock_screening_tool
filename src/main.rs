@@ -113,8 +113,7 @@ fn run() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-#[actix_rt::main]
-async fn main() {
+fn main() {
 
     if let Err(err) = run() {
         println!("{}", err);
